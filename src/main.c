@@ -84,20 +84,19 @@
             {1, 0, 0, 0, 1},
             {1, 1, 1, 1, 1}
             };
+        char tecla = ' ';
+            
+    while(tecla != 'q'){
 
         ImprimirMapa(Mapa);
 
-        AcharJogador(&player,Mapa);
+        AcharJogador(&player, Mapa);
+
         printf("Jogador na linha %d e coluna %d\n", player.linha, player.coluna);
 
-        
-        char tecla;
         scanf(" %c", &tecla);
 
         MoverJogador(&player, Mapa, tecla);
-
-        ImprimirMapa(Mapa);
-
-
+    }   
         return 0;
     }
