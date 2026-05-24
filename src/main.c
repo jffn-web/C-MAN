@@ -43,6 +43,34 @@
         }
 
     }
+
+    void MoverJogador(struct jogador *player, int mapa[5][5], char tecla){
+
+        if(tecla == 'd' && mapa[player->linha][player->coluna + 1] != 1){
+
+            mapa[player->linha][player->coluna] = 0;
+            player->coluna++;
+            mapa[player->linha][player->coluna] = 2;
+
+        }else if(tecla == 'a' && mapa[player->linha][player->coluna - 1] != 1){
+
+            mapa[player->linha][player->coluna] = 0;
+            player->coluna--;
+            mapa[player->linha][player->coluna] = 2;
+
+        }else if(tecla == 'w' && mapa[player->linha - 1][player->coluna] != 1){
+
+            mapa[player->linha][player->coluna] = 0;
+            player->linha--;
+            mapa[player->linha][player->coluna] = 2;
+
+        }else if(tecla == 's' && mapa[player->linha + 1][player->coluna] != 1){
+
+            mapa[player->linha][player->coluna] = 0;
+            player->linha++;
+            mapa[player->linha][player->coluna] = 2;
+        }
+    }
         
 
     int main(){
@@ -63,5 +91,13 @@
         printf("Jogador na linha %d e coluna %d\n", player.linha, player.coluna);
 
         
+        char tecla;
+        scanf(" %c", &tecla);
+
+        MoverJogador(&player, Mapa, tecla);
+
+        ImprimirMapa(Mapa);
+
+
         return 0;
     }
