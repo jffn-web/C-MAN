@@ -45,7 +45,7 @@
 
     }
 
-    void MoverJogador(struct jogador *player, int mapa[5][5], char tecla){
+    int MoverJogador(struct jogador *player, int mapa[5][5], char tecla){
 
         int novaLinha = player->linha;
         int novaColuna = player->coluna;
@@ -63,11 +63,15 @@
             novaLinha++;
         }
 
-        if(mapa[novaLinha][novaColuna] != 1){
+        if(mapa[novaLinha][novaColuna] == 3){
+
+            return 1;
+
+        }else if(mapa[novaLinha][novaColuna] != 1 && mapa[novaLinha][novaColuna] != 3){
 
             if(mapa[novaLinha][novaColuna] == 4){
                 player->pontos += 10;
-        }
+            }
 
             mapa[player->linha][player->coluna] = 0;
 
@@ -75,8 +79,14 @@
             player->coluna = novaColuna;
 
             mapa[player->linha][player->coluna] = 2;
-    }
-}
+
+        }
+
+        return 0;
+
+        }
+
+
         
 
     int main(){
@@ -93,6 +103,8 @@
             {1, 1, 1, 1, 1}
             };
         char tecla = ' ';
+
+        int PassouDeFase = 0;
             
     while(tecla != 'q'){
 
@@ -105,7 +117,12 @@
 
         scanf(" %c", &tecla);
 
-        MoverJogador(&player, Mapa, tecla);
+        PassouDeFase = MoverJogador(&player, Mapa, tecla);
+
+        if(PassouDeFase == 1){
+            printf("\nVoce passou de fase!");
+            break;
+        }
     }   
         return 0;
     }
