@@ -86,6 +86,17 @@
 
         }
 
+    void CopiarMapa(int origem[5][5], int destino[5][5]){
+
+        int i, j;
+
+        for(i = 0; i < 5; i++){
+            for(j = 0; j < 5; j++){
+                 origem[i][j] = destino[i][j];
+                }
+            }
+    }   
+
 
         
 
@@ -102,9 +113,19 @@
             {1, 4, 0, 0, 1},
             {1, 1, 1, 1, 1}
             };
+        
+        int Mapa2[5][5] = {
+            {1, 3, 1, 1, 1},
+            {1, 0, 0, 0, 1},
+            {1, 0, 1, 0, 1},
+            {1, 4, 0, 2, 1},
+            {1, 1, 1, 1, 1}
+            };    
+
         char tecla = ' ';
 
         int PassouDeFase = 0;
+        int fase = 1;
             
     while(tecla != 'q'){
 
@@ -120,9 +141,22 @@
         PassouDeFase = MoverJogador(&player, Mapa, tecla);
 
         if(PassouDeFase == 1){
-            printf("\nVoce passou de fase!");
-            break;
-        }
+
+            if(fase == 1){
+
+                printf("\nVoce passou para a fase 2!\n");
+
+                CopiarMapa(Mapa, Mapa2);
+
+                fase = 2;
+                PassouDeFase = 0;
+            }
+            else{
+
+                printf("\nVoce venceu o jogo!\n");
+                break;
+            }
+}
     }   
         return 0;
     }
