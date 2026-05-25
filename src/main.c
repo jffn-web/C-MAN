@@ -17,7 +17,26 @@
             
             for(j = 0; j < 5; j++){
                 
-                printf("%d ",mapa[i][j]);
+                if (mapa[i][j] == 1){
+
+                    printf("# ");
+                }else if(mapa[i][j] == 0){
+
+                    printf(". ");
+                }else if(mapa[i][j] == 2){
+
+                    printf("& ");
+                }else if(mapa[i][j] == 3){
+
+                    printf("X ");
+                }else if(mapa[i][j] == 4){
+
+                    printf("* ");
+                }else if(mapa[i][j] == 6){
+
+                    printf("E ");
+                }
+
             } 
 
             printf("\n");
@@ -67,10 +86,16 @@
 
             return 1;
 
-        }else if(mapa[novaLinha][novaColuna] != 1 && mapa[novaLinha][novaColuna] != 3){
+        }else if(mapa[novaLinha][novaColuna] != 1 && mapa[novaLinha][novaColuna] != 3 ){
 
             if(mapa[novaLinha][novaColuna] == 4){
                 player->pontos += 10;
+            }
+            
+            if(mapa[novaLinha][novaColuna] == 6){
+
+                player->vida--;
+
             }
 
             mapa[player->linha][player->coluna] = 0;
@@ -97,7 +122,16 @@
             }
     }   
 
+    int VerificarGameOver(struct jogador player){
 
+        if(player.vida <= 0){
+
+            return 1;
+        }else{
+
+            return 0;
+        }
+    }
         
 
     int main(){
@@ -109,15 +143,15 @@
         int Mapa[5][5] = {
             {1, 1, 1, 1, 1},
             {1, 2, 0, 3, 1},
-            {1, 0, 1, 0, 1},
+            {1, 6, 1, 6, 1},
             {1, 4, 0, 0, 1},
             {1, 1, 1, 1, 1}
             };
         
         int Mapa2[5][5] = {
             {1, 3, 1, 1, 1},
-            {1, 0, 0, 0, 1},
-            {1, 0, 1, 0, 1},
+            {1, 0, 6, 0, 1},
+            {1, 0, 1, 6, 1},
             {1, 4, 0, 2, 1},
             {1, 1, 1, 1, 1}
             };    
@@ -139,6 +173,11 @@
         scanf(" %c", &tecla);
 
         PassouDeFase = MoverJogador(&player, Mapa, tecla);
+
+        if(VerificarGameOver(player) == 1){
+            printf("Game Over!\n");
+            break;
+        }
 
         if(PassouDeFase == 1){
 
