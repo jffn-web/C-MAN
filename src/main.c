@@ -1,11 +1,22 @@
 #include <stdio.h>
+#include <stdlib.h>
 
     struct jogador{
       
       int linha;
       int coluna;
       int vida;  
-      int pontos;
+      int pontos; 
+
+    };
+
+    struct inimigo{
+        
+        int linha;
+        int coluna;
+        int vivo;
+        int direcao;
+
     };
     
     void ImprimirMapa(int mapa[5][5]){
@@ -22,19 +33,19 @@
                     printf("# ");
                 }else if(mapa[i][j] == 0){
 
-                    printf(". ");
+                    printf("  ");
                 }else if(mapa[i][j] == 2){
 
-                    printf("& ");
+                    printf("@ ");
                 }else if(mapa[i][j] == 3){
 
                     printf("X ");
                 }else if(mapa[i][j] == 4){
 
-                    printf("* ");
+                    printf(". ");
                 }else if(mapa[i][j] == 6){
 
-                    printf("E ");
+                    printf("G ");
                 }
 
             } 
@@ -70,7 +81,7 @@
         int novaColuna = player->coluna;
 
         if(tecla == 'd'){
-            novaColuna++;
+            novaColuna ++;
         }
         else if(tecla == 'a'){
             novaColuna--;
@@ -111,13 +122,51 @@
 
         }
 
-    void CopiarMapa(int origem[5][5], int destino[5][5]){
+    void MoverInimigo(struct inimigo *enemy, int mapa[5][5]){
+
+        int novaLinha = enemy->linha;
+        int novaColuna = enemy->coluna;
+
+        if(enemy->direcao == 0){
+            novaLinha--;
+        }else if(enemy->direcao == 1){
+            novaColuna++;
+        }else if(enemy->direcao == 2){
+            novaLinha++;
+        }else if(enemy->direcao == 3){
+            novaColuna--;
+
+        }
+
+        if(mapa[novaLinha][novaColuna] == 1){
+
+            enemy->direcao++;
+
+            if(enemy->direcao > 3){
+
+                enemy->direcao = 0;
+
+            }
+        
+        }else{
+
+                mapa[enemy->linha][enemy->coluna] = 0;
+
+                enemy->linha = novaLinha;
+                enemy->coluna = novaColuna;
+
+                mapa[enemy->linha][enemy->coluna] = 6;
+
+            }
+    }   
+
+    void CopiarMapa(int mapa1[5][5], int mapa2[5][5]){
 
         int i, j;
 
         for(i = 0; i < 5; i++){
             for(j = 0; j < 5; j++){
-                 origem[i][j] = destino[i][j];
+                 mapa1[i][j] = mapa2[i][j];
                 }
             }
     }   
@@ -135,6 +184,12 @@
         
 
     int main(){
+
+        struct inimigo enemy;
+        enemy.linha = 2;
+        enemy.coluna = 1;
+        enemy.vivo = 1;
+        enemy.direcao = 1;
 
         struct jogador player;
         player.vida = 3;
@@ -163,6 +218,7 @@
             
     while(tecla != 'q'){
 
+        system("cls");
         ImprimirMapa(Mapa);
         printf("\nVida: %d | Pontos: %d\n", player.vida, player.pontos);
 
@@ -171,6 +227,8 @@
         printf("Jogador na linha %d e coluna %d\n", player.linha, player.coluna);
 
         scanf(" %c", &tecla);
+
+        MoverInimigo(&enemy,Mapa);
 
         PassouDeFase = MoverJogador(&player, Mapa, tecla);
 
