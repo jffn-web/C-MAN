@@ -10,6 +10,8 @@
       int coluna;
       int vida;  
       int pontos; 
+      int poder;
+      time_t inicioPoder;
 
     };
 
@@ -23,7 +25,7 @@
 
     };
     
-    void ImprimirMapa(int mapa[LINHAS][COLUNAS]){
+    void ImprimirMapa(int mapa[LINHAS][COLUNAS],struct jogador *player){
         
         int i;
         int j;
@@ -32,17 +34,51 @@
             
             for(j = 0; j < COLUNAS; j++){
                 
-        if (mapa[i][j] == 1){
-            printf("\033[34m[]\033[0m");
-        }else if(mapa[i][j] == 0){
-            printf("  ");
-        }else if(mapa[i][j] == 2){
-            printf("\033[33mC<\033[0m");
-        }else if(mapa[i][j] == 4){
-            printf("\033[37m..\033[0m");
-        }else if(mapa[i][j] == 6){
-            printf("\033[31m()\033[0m");
-        }
+            if (mapa[i][j] == 1){
+
+                printf("\033[34m[]\033[0m");
+
+            }else if(mapa[i][j] == 0){
+
+                printf("  ");
+
+            }else if(mapa[i][j] == 2){
+
+                printf("\033[33mC<\033[0m");
+
+            }else if(mapa[i][j] == 4){
+
+                printf("\033[37m..\033[0m");
+
+            }else if(mapa[i][j] == 5){
+
+                printf("\033[31m◉ \033[0m");
+
+            }else if(mapa[i][j] == 6){
+                
+                if (player->poder == 0){
+                    
+                    printf("\033[35m()\033[0m");
+
+                }else{
+
+                    if( time(NULL) - player->inicioPoder >= 6){
+                        
+                        if(time(NULL) % 2 == 0){
+
+                            printf("\033[97mGG\033[0m");
+
+                        }else{
+
+                            printf("\033[94mGG\033[0m");
+
+                            }
+                        }else{
+
+                            printf("\033[94mGG\033[0m");
+                        }
+                    }
+                }
             } 
 
             printf("\n");
@@ -76,16 +112,24 @@
         int novaColuna = player->coluna;
 
         if(tecla == 'd'){
+
             novaColuna ++;
+
         }
         else if(tecla == 'a'){
+
             novaColuna--;
+
         }
         else if(tecla == 'w'){
+
             novaLinha--;
+
         }
         else if(tecla == 's'){
+
             novaLinha++;
+
         }
 
         if(mapa[novaLinha][novaColuna] != 1 ){
@@ -93,9 +137,20 @@
             if(mapa[novaLinha][novaColuna] == 4){
                 player->pontos += 10;
             }
-            
-            
-          
+            if(mapa[novaLinha][novaColuna] == 5){
+
+                player->poder = 1;
+                player->inicioPoder = time(NULL);
+
+            }
+            if(mapa[novaLinha][novaColuna] == 6 && player->poder == 1){
+
+                player->linha = novaLinha;
+                player->coluna = novaColuna;
+
+                return 0;
+
+            }
 
             mapa[player->linha][player->coluna] = 0;
 
@@ -184,6 +239,53 @@
                 }
             }
     }
+
+    void PoderDaCereja(struct jogador *player, struct inimigo *enemy,int mapa[LINHAS][COLUNAS], int fase ){
+
+        int inicioEL = 1;
+        int InicioEC = 12;
+        int InicioMapa2EL = 7;
+        int InicioMapa2EC = 11;
+
+        if (player->poder == 1){
+
+
+            if(time(NULL) - player->inicioPoder >= 10){
+
+            player->poder = 0;
+
+        }
+    }
+
+        if(fase == 1){
+            if(player->linha == enemy->linha && player->coluna == enemy->coluna && player->poder == 1){
+
+                    player->pontos += 50;
+                    mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
+
+                    enemy->linha = inicioEL;
+                    enemy->coluna = InicioEC;
+                    enemy->sobrepor = 0;
+                    enemy->direcao = rand() % 4;
+
+                    mapa[enemy->linha][enemy->coluna] = 6;
+            }
+        }else if(fase == 2){
+
+                if(player->linha == enemy->linha && player->coluna == enemy->coluna && player->poder == 1){
+                    player->pontos += 50;
+                    mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
+
+                    enemy->linha = InicioMapa2EL;
+                    enemy->coluna = InicioMapa2EC;
+                    enemy->sobrepor = 0;
+                    enemy->direcao = rand() % 4;
+
+                    mapa[enemy->linha][enemy->coluna] = 6;
+                }
+        }
+
+    }
     
     void PerderVida(struct jogador *player, struct inimigo *enemy, int mapa[LINHAS][COLUNAS], int fase){
 
@@ -207,8 +309,11 @@
                 player->coluna = InicioPC;
 
                 mapa[player->linha][player->coluna] = 2;
-            
-                player->vida--;
+                
+                if(player->poder == 0){
+
+                    player->vida--;
+                }
                 /////////////////////////////////////////////////////////////////////
                 mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
 
@@ -229,7 +334,11 @@
                 player->coluna = InicioMapa2PC;
 
                 mapa[player->linha][player->coluna] = 2;
-                player->vida--;
+
+                if(player->poder == 0){
+                    
+                    player->vida--;
+                }
             
                 ////////////////////////////////////////////////////////
 
@@ -282,6 +391,8 @@
 
     int main(){
 
+        system("chcp 65001 > nul");
+
         srand(time(NULL));
         struct inimigo enemy;
         enemy.linha = 1;
@@ -293,6 +404,8 @@
         struct jogador player;
         player.vida = 3;
         player.pontos = 0;
+        player.poder = 0;
+
 
     int MapaDoMaroto[LINHAS][COLUNAS];    
 
@@ -300,7 +413,7 @@
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
         {1,2,4,4,4,4,4,0,0,0,0,1,6,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,1},
         {1,4,1,1,1,1,4,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,4,1},
-        {1,4,0,0,0,4,4,1,0,0,0,4,0,0,0,0,4,0,1,0,0,0,4,0,0,0,0,4,4,1},
+        {1,4,0,0,0,4,4,1,0,0,0,4,0,0,0,0,4,0,1,0,0,0,4,0,0,0,5,4,4,1},
         {1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,0,1,1,1,1},
         {1,0,0,0,0,4,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,1},
         {1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,0,1},
@@ -310,9 +423,9 @@
         {1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1},
         {1,0,0,0,0,1,0,0,0,0,0,4,0,0,0,0,4,0,0,0,0,1,0,0,0,0,0,0,0,1},
         {1,0,1,1,0,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,0,1,1,0,1},
-        {1,0,4,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,4,0,1},
+        {1,0,4,0,0,4,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,4,0,0,0,0,4,0,1},
         {1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1},
-        {1,0,0,0,0,4,0,1,0,0,0,4,0,0,0,0,4,0,1,0,0,0,4,0,0,0,0,0,0,1},
+        {1,0,0,5,0,4,0,1,0,0,0,4,0,0,0,0,4,0,1,0,0,0,4,0,0,0,0,0,0,1},
         {1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,1,1,1,0,1,1,1,1},
         {1,0,4,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,4,0,1},
         {1,6,1,1,1,1,0,1,1,1,1,1,0,4,4,4,0,1,1,1,1,1,0,1,1,1,1,1,6,1},
@@ -321,11 +434,11 @@
         
     int Mapa2[LINHAS][COLUNAS] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-        {1,0,0,0,0,0,4,4,4,4,0,1,6,0,0,0,0,4,4,4,4,0,0,0,0,0,0,0,4,1},
+        {1,0,0,5,0,0,4,4,4,4,0,1,6,0,0,0,0,4,4,4,4,0,0,0,0,0,0,0,4,1},
         {1,1,1,1,1,0,1,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,0,1,1},
         {1,0,0,0,0,4,0,0,0,0,4,0,0,0,0,4,0,0,1,0,0,0,4,0,0,0,0,0,0,1},
         {1,0,1,1,1,1,0,1,1,1,1,1,4,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1},
-        {1,0,4,0,0,0,0,1,0,0,0,0,4,0,0,0,0,0,1,0,0,0,0,0,0,0,0,4,0,1},
+        {1,0,4,0,0,0,0,1,0,0,0,0,4,0,0,0,0,0,1,0,0,0,0,0,0,5,0,4,0,1},
         {1,0,1,0,1,1,1,1,0,1,1,1,1,1,4,0,1,1,1,1,0,1,1,1,1,0,1,1,0,1},
         {0,0,4,0,0,0,0,0,0,0,0,6,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,4,0,0},
         {1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1},
@@ -335,7 +448,7 @@
         {1,0,1,1,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1,0,1,1,1,1,0,1,1,0,1,1},
         {1,0,4,0,0,4,0,1,0,0,0,0,0,6,0,0,0,0,1,0,0,0,4,0,0,0,0,4,0,1},
         {1,0,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1},
-        {1,0,0,0,0,4,0,0,0,0,0,4,0,0,0,0,4,0,0,0,0,0,4,0,0,0,0,0,0,1},
+        {1,0,0,0,0,4,0,0,0,0,0,4,0,0,0,0,4,0,0,0,0,0,4,0,0,5,0,0,0,1},
         {1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,1,0,1,0,1,1,1,1,0,1},
         {1,0,4,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,4,0,1},
         {1,2,1,1,1,1,0,1,1,1,1,1,0,4,4,4,0,1,1,1,1,1,0,1,1,1,1,1,6,1},
@@ -352,7 +465,7 @@
     while(tecla != 'q'){
 
         system("cls");
-        ImprimirMapa(MapaDoMaroto);
+        ImprimirMapa(MapaDoMaroto,&player);
         printf("\nVida: %d | Pontos: %d\n", player.vida, player.pontos);
 
         AcharJogador(&player, MapaDoMaroto);
@@ -364,6 +477,8 @@
         MoverInimigo(&enemy,MapaDoMaroto);
 
         MoverJogador(&player, MapaDoMaroto, tecla);
+
+        PoderDaCereja(&player, &enemy, MapaDoMaroto, fase);
 
         PerderVida(&player, &enemy, MapaDoMaroto, fase);
 
