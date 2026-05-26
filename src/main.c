@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #define LINHAS 20
 #define COLUNAS 30
 
@@ -18,6 +19,7 @@
         int coluna;
         int vivo;
         int direcao;
+        int sobrepor;
 
     };
     
@@ -105,11 +107,7 @@
                 player->pontos += 10;
             }
             
-            if(mapa[novaLinha][novaColuna] == 6){
-
-                player->vida--;
-
-            }
+          
 
             mapa[player->linha][player->coluna] = 0;
 
@@ -129,6 +127,7 @@
         int novaLinha = enemy->linha;
         int novaColuna = enemy->coluna;
 
+
         if(enemy->direcao == 0){
             novaLinha--;
         }else if(enemy->direcao == 1){
@@ -140,24 +139,21 @@
 
         }
 
-        if(mapa[novaLinha][novaColuna] == 1){
+        if(mapa[novaLinha][novaColuna] == 1 || mapa[novaLinha][novaColuna] == 2){
 
-            enemy->direcao++;
-
-            if(enemy->direcao > 3){
-
-                enemy->direcao = 0;
-
-            }
+            enemy->direcao = rand() % 4;
         
         }else{
 
-                mapa[enemy->linha][enemy->coluna] = 0;
 
-                enemy->linha = novaLinha;
-                enemy->coluna = novaColuna;
+            mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
 
-                mapa[enemy->linha][enemy->coluna] = 6;
+            enemy->sobrepor = mapa[novaLinha][novaColuna];
+
+            enemy->linha = novaLinha;
+            enemy->coluna = novaColuna;
+
+            mapa[enemy->linha][enemy->coluna] = 6;
 
             }
     }   
@@ -171,7 +167,68 @@
                  mapa1[i][j] = mapa2[i][j];
                 }
             }
-    }   
+    }
+    
+    void PerderVida(struct jogador *player, struct inimigo *enemy, int mapa[LINHAS][COLUNAS], int fase){
+
+        int InicioPL = 1;
+        int InicioPC = 1;
+        int inicioEL = 1;
+        int InicioEC = 12;
+
+        int InicioMapa2PL = 18;
+        int InicioMapa2PC = 1;
+        int InicioMapa2EL = 7;
+        int InicioMapa2EC = 11;
+
+        if(fase == 1){
+
+            if(player->linha == enemy->linha && player->coluna == enemy->coluna){
+
+                mapa[player->linha][player->coluna] = 0;
+
+                player->linha = InicioPL;
+                player->coluna = InicioPC;
+
+                mapa[player->linha][player->coluna] = 2;
+            
+                player->vida--;
+                /////////////////////////////////////////////////////////////////////
+                mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
+
+                enemy->linha = inicioEL;
+                enemy->coluna = InicioEC;
+                enemy->sobrepor = 0;
+                enemy->direcao = rand() % 4;
+
+                mapa[enemy->linha][enemy->coluna] = 6;
+            
+            }
+        }else if(fase == 2) {
+            if(player->linha == enemy->linha && player->coluna == enemy->coluna){
+
+                mapa[player->linha][player->coluna] = 0;
+
+                player->linha = InicioMapa2PL;
+                player->coluna = InicioMapa2PC;
+
+                mapa[player->linha][player->coluna] = 2;
+                player->vida--;
+            
+                ////////////////////////////////////////////////////////
+
+                mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
+
+                enemy->linha = InicioMapa2EL;
+                enemy->coluna = InicioMapa2EC;
+                enemy->sobrepor = 0;
+                enemy->direcao = rand() % 4;
+
+                mapa[enemy->linha][enemy->coluna] = 6;
+            
+            }
+        }
+    }
 
     int VerificarGameOver(struct jogador player){
 
@@ -187,11 +244,13 @@
 
     int main(){
 
+        srand(time(NULL));
         struct inimigo enemy;
         enemy.linha = 1;
         enemy.coluna = 12;
         enemy.direcao = 3;
         enemy.vivo = 1;
+        enemy.sobrepor = 0;
 
         struct jogador player;
         player.vida = 3;
@@ -263,6 +322,8 @@
         MoverInimigo(&enemy,Mapa);
 
         PassouDeFase = MoverJogador(&player, Mapa, tecla);
+        
+        PerderVida(&player, &enemy, Mapa, fase);
 
         if(VerificarGameOver(player) == 1){
             printf("Game Over!\n");
