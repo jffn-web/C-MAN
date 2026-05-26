@@ -32,26 +32,17 @@
             
             for(j = 0; j < COLUNAS; j++){
                 
-                if (mapa[i][j] == 1){
-
-                    printf("# ");
-                }else if(mapa[i][j] == 0){
-
-                    printf("  ");
-                }else if(mapa[i][j] == 2){
-
-                    printf("@ ");
-                }else if(mapa[i][j] == 3){
-
-                    printf("X ");
-                }else if(mapa[i][j] == 4){
-
-                    printf(". ");
-                }else if(mapa[i][j] == 6){
-
-                    printf("G ");
-                }
-
+        if (mapa[i][j] == 1){
+            printf("\033[34m[]\033[0m");
+        }else if(mapa[i][j] == 0){
+            printf("  ");
+        }else if(mapa[i][j] == 2){
+            printf("\033[33mC<\033[0m");
+        }else if(mapa[i][j] == 4){
+            printf("\033[37m..\033[0m");
+        }else if(mapa[i][j] == 6){
+            printf("\033[31m()\033[0m");
+        }
             } 
 
             printf("\n");
@@ -285,6 +276,8 @@
             return 0;
         }
     }
+
+    
         
 
     int main(){
@@ -301,7 +294,9 @@
         player.vida = 3;
         player.pontos = 0;
 
-    int Mapa[LINHAS][COLUNAS] = {
+    int MapaDoMaroto[LINHAS][COLUNAS];    
+
+    int Mapa1[LINHAS][COLUNAS] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
         {1,2,4,4,4,4,4,0,0,0,0,1,6,0,0,0,0,4,4,4,4,4,4,0,0,0,0,0,0,1},
         {1,4,1,1,1,1,4,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,4,1},
@@ -352,46 +347,61 @@
         
         int fase = 1;
             
+        CopiarMapa(MapaDoMaroto, Mapa1);
+
     while(tecla != 'q'){
 
         system("cls");
-        ImprimirMapa(Mapa);
+        ImprimirMapa(MapaDoMaroto);
         printf("\nVida: %d | Pontos: %d\n", player.vida, player.pontos);
 
-        AcharJogador(&player, Mapa);
+        AcharJogador(&player, MapaDoMaroto);
 
         printf("Jogador na linha %d e coluna %d\n", player.linha, player.coluna);
 
         scanf(" %c", &tecla);
 
-        MoverInimigo(&enemy,Mapa);
+        MoverInimigo(&enemy,MapaDoMaroto);
 
-        MoverJogador(&player, Mapa, tecla);
+        MoverJogador(&player, MapaDoMaroto, tecla);
 
-        PerderVida(&player, &enemy, Mapa, fase);
+        PerderVida(&player, &enemy, MapaDoMaroto, fase);
 
         if(VerificarGameOver(player) == 1){
             printf("Game Over!\n");
             break;
         }
 
-        if(VerificarSePassouDeFase(Mapa) == 0){
+        if(VerificarSePassouDeFase(MapaDoMaroto) == 0){
 
             if(fase == 1){
 
                 printf("\nVoce passou para a fase 2!\n");
 
-                CopiarMapa(Mapa, Mapa2);
+                CopiarMapa(MapaDoMaroto, Mapa2);
 
                 fase = 2;
                 
             }
             else{
-
-                printf("\nVoce venceu o jogo!\n");
-                break;
+                CopiarMapa(MapaDoMaroto, Mapa1);
+                fase = 1;
+                
             }
-        }
+             AcharJogador(&player, MapaDoMaroto);
+
+            if(fase == 1){
+                enemy.linha = 1;
+                enemy.coluna = 12;
+            }else{
+                enemy.linha = 7;
+                enemy.coluna = 11;
+            }
+
+        enemy.sobrepor = 0;
+        enemy.direcao = rand() % 4;
+    }
+        
     }
 
         return 0;
