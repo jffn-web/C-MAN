@@ -33,6 +33,8 @@
         int ParadoOuAndando;
         time_t inicioEspera;
 
+        int cor;
+
 
         struct inimigo *prox;
 
@@ -42,65 +44,70 @@
     struct inimigo enemy4;
 
     
-    void ImprimirMapa(int mapa[LINHAS][COLUNAS],struct jogador *player){
-        
+    void ImprimirMapa(int mapa[LINHAS][COLUNAS], struct jogador *player, struct inimigo *enemy){
+
         int i;
         int j;
 
         for(i = 0; i < LINHAS; i++){
-            
+
             for(j = 0; j < COLUNAS; j++){
-                
-            if (mapa[i][j] == 1){
 
-                printf("\033[34m[]\033[0m");
+                if(mapa[i][j] == 1){
+                    printf("\033[34m[]\033[0m");
 
-            }else if(mapa[i][j] == 0){
+                }else if(mapa[i][j] == 0){
+                    printf("  ");
 
-                printf("  ");
+                }else if(mapa[i][j] == 2){
+                    printf("\033[33mC<\033[0m");
 
-            }else if(mapa[i][j] == 2){
+                }else if(mapa[i][j] == 4){
+                    printf("\033[37m..\033[0m");
 
-                printf("\033[33mC<\033[0m");
+                }else if(mapa[i][j] == 5){
+                    printf("\033[31m◉ \033[0m");
 
-            }else if(mapa[i][j] == 4){
+                }else if(mapa[i][j] == 6){
 
-                printf("\033[37m..\033[0m");
+                    int desenhou = 0;
+                    struct inimigo *atual = enemy;
 
-            }else if(mapa[i][j] == 5){
+                    while(atual != NULL){
 
-                printf("\033[31m◉ \033[0m");
+                        if(atual->linha == i && atual->coluna == j){
+                            desenhou = 1;
 
-            }else if(mapa[i][j] == 6){
-                
-                if (player->poder == 0){
-                    
-                    printf("\033[35m()\033[0m");
-
-                }else{
-
-                    if( time(NULL) - player->inicioPoder >= 5){
-                        
-                        if(time(NULL) % 2 == 0){
-
-                            printf("\033[97m()\033[0m");
-
-                        }else{
-
-                            printf("\033[94m()\033[0m");
-
+                            if(player->poder == 0){
+                                printf("\033[%dm()\033[0m", atual->cor);
+                            }else{
+                                if(time(NULL) - player->inicioPoder >= 5){
+                                    if(time(NULL) % 2 == 0){
+                                        printf("\033[97m()\033[0m");
+                                    }else{
+                                        printf("\033[94m()\033[0m");
+                                    }
+                                }else{
+                                    printf("\033[94m()\033[0m");
+                                }
                             }
-                        }else{
 
-                            printf("\033[94m()\033[0m");
+                            break;
                         }
+
+                        atual = atual->prox;
+                    }
+
+                    if(desenhou == 0){
+                        printf("  ");
                     }
                 }
-            } 
+            }
 
             printf("\n");
         }
-    }    
+    }
+   
 
     void AcharJogador(struct jogador *player,int mapa[LINHAS][COLUNAS]){
 
@@ -220,7 +227,7 @@
         }
 
 
-        if(mapa[novaLinha][novaColuna] == 1 || mapa[novaLinha][novaColuna] == 2){
+        if(mapa[novaLinha][novaColuna] == 1 || mapa[novaLinha][novaColuna] == 2 || mapa[novaLinha][novaColuna] == 6){
 
             enemy->direcao = rand() % 4;
         
@@ -411,30 +418,49 @@
         }
     }
 
+   void InicializarInimigo(struct inimigo *enemy,int linha, int coluna, int tempo, int cor){
+
+        enemy->linha = linha;
+        enemy->coluna = coluna;
+
+        enemy->linhaSpawn = linha;
+        enemy->colunaSpawn = coluna;
+
+        enemy->tempoParaSair = tempo;
+
+        enemy->cor = cor;
+
+        enemy->ParadoOuAndando = ESPERANDO;
+
+        enemy->inicioEspera = time(NULL);
+
+        enemy->direcao = 0;
+        enemy->vivo = 1;
+        enemy->sobrepor = 0;
+
+   }
     
         
 
     int main(){
 
-        system("chcp 65001");
+        
+
 
         srand(time(NULL));
         struct inimigo enemy;
-        enemy.linha = 8;
-        enemy.coluna = 14;
 
-        enemy.linhaSpawn = 8;
-        enemy.colunaSpawn = 14;
+        enemy.prox = &enemy2;
+        enemy2.prox = &enemy3;
+        enemy3.prox = &enemy4;
+        enemy4.prox = NULL;
 
-        enemy.tempoParaSair = 3;
 
-        enemy.ParadoOuAndando = ESPERANDO;
+    InicializarInimigo(&enemy, 8, 14, 3, 31);
+    InicializarInimigo(&enemy2, 9, 13, 6, 32);
+    InicializarInimigo(&enemy3, 9, 14, 9, 35);
+    InicializarInimigo(&enemy4, 9, 15, 12, 36);
 
-        enemy.inicioEspera = time(NULL);
-
-        enemy.direcao = 3;
-        enemy.vivo = 1;
-        enemy.sobrepor = 0;
         struct inimigo *atual;
 
         atual = &enemy;
@@ -499,10 +525,13 @@
             
     CopiarMapa(MapaDoMaroto, Mapa1);
     MapaDoMaroto[enemy.linha][enemy.coluna] = 6;
+    MapaDoMaroto[enemy2.linha][enemy2.coluna] = 6;
+    MapaDoMaroto[enemy3.linha][enemy3.coluna] = 6;
+    MapaDoMaroto[enemy4.linha][enemy4.coluna] = 6;
 
     keyboardInit();
     screenInit(1);
-    timerInit(200);
+    timerInit(125);
 
     while(tecla != 'q'){
 
@@ -516,13 +545,26 @@
 
             AcharJogador(&player, MapaDoMaroto);
 
-            AtualizarInimigo(&enemy, MapaDoMaroto);
             MoverJogador(&player, MapaDoMaroto, tecla);
 
-            PoderDaCereja(&player, &enemy, MapaDoMaroto, fase);
-            PerderVida(&player, &enemy, MapaDoMaroto, fase);
+            atual = &enemy;
 
-            ImprimirMapa(MapaDoMaroto, &player);
+            while(atual != NULL){
+
+                PoderDaCereja(&player, atual, MapaDoMaroto, fase);
+                PerderVida(&player, atual, MapaDoMaroto, fase);
+
+                AtualizarInimigo(atual, MapaDoMaroto);
+
+                PoderDaCereja(&player, atual, MapaDoMaroto, fase);
+                PerderVida(&player, atual, MapaDoMaroto, fase);
+
+                atual = atual->prox;
+            }
+
+            
+
+            ImprimirMapa(MapaDoMaroto, &player, &enemy);
             printf("\nVida: %d | Pontos: %d\n", player.vida, player.pontos);
 
             screenUpdate();
@@ -550,13 +592,21 @@
             }
              AcharJogador(&player, MapaDoMaroto);
 
-        enemy.linha = enemy.linhaSpawn;
-        enemy.coluna = enemy.colunaSpawn;
-        enemy.ParadoOuAndando = ESPERANDO;
-        enemy.inicioEspera = time(NULL);
-        enemy.sobrepor = 0;
-        enemy.direcao = rand() % 4;
-        MapaDoMaroto[enemy.linha][enemy.coluna] = 6;
+            atual = &enemy;
+
+            while(atual != NULL){
+
+                atual->linha = atual->linhaSpawn;
+                atual->coluna = atual->colunaSpawn;
+                atual->ParadoOuAndando = ESPERANDO;
+                atual->inicioEspera = time(NULL);
+                atual->sobrepor = 0;
+                atual->direcao = rand() % 4;
+
+                MapaDoMaroto[atual->linha][atual->coluna] = 6;
+
+                atual = atual->prox;
+            }
     }
         
     }
