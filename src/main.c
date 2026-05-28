@@ -17,6 +17,8 @@
       int pontos; 
       int poder;
       time_t inicioPoder;
+      char nome[30];  
+
 
     };
 
@@ -439,6 +441,20 @@
         enemy->sobrepor = 0;
 
    }
+
+   void SalvarScore(struct jogador *player){
+
+        FILE *arquivo;
+
+        arquivo = fopen("score.txt", "a");
+
+        if(arquivo != NULL){
+
+            fprintf(arquivo, "%s %d\n", player->nome, player->pontos);
+
+            fclose(arquivo);
+        }
+    }
     
         
 
@@ -466,6 +482,10 @@
         atual = &enemy;
 
         struct jogador player;
+
+        printf("Digite seu nome: ");
+        scanf("%29s", player.nome);
+
         player.vida = 3;
         player.pontos = 0;
         player.poder = 0;
@@ -570,6 +590,7 @@
             screenUpdate();
     }
         if(VerificarGameOver(player) == 1){
+            SalvarScore(&player);
             printf("Game Over!\n");
             break;
         }
