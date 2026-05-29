@@ -9,6 +9,8 @@
 #define ESPERANDO 0
 #define ANDANDO 1
 
+    
+
     struct jogador{
       
       int linha;
@@ -455,15 +457,129 @@
             fclose(arquivo);
         }
     }
+        
+    void HUD(int escolha){
+
+            screenClear();
+
+            printf("\n\n");
+            printf("\033[33m========================================\033[0m\n");
+            printf("\033[33m              C  -  M A N              \033[0m\n");
+            printf("\033[33m========================================\033[0m\n\n");
+
+            printf("              \033[33mC<\033[0m    \033[31m()\033[0m    \033[32m()\033[0m    \033[35m()\033[0m    \033[36m()\033[0m\n\n");
+
+            printf("\033[34m----------------------------------------\033[0m\n\n");
+
+            if(escolha == 1){
+                printf("              \033[32m> [ JOGAR ]\033[0m\n\n");
+                printf("                PONTUACAO\n\n");
+                printf("                SAIR\n\n");
+            }
+            else if(escolha == 2){
+                printf("                JOGAR\n\n");
+                printf("              \033[32m> [ PONTUACAO ]\033[0m\n\n");
+                printf("                SAIR\n\n");
+            }
+            else if(escolha == 3){
+                printf("                JOGAR\n\n");
+                printf("                RANKING\n\n");
+                printf("              \033[32m> [ SAIR ]\033[0m\n\n");
+            }
+
+            printf("\033[34m----------------------------------------\033[0m\n\n");
+            printf("        Use \033[32mW/S\033[0m para mover\n");
+            printf("        Use \033[32mENTER\033[0m para escolher\n\n");
+
+            screenUpdate();
+        }
+
+    int MenuInicial(){
+
+            char tecla = ' ';
+            int escolha = 1;
+
+            while(1){
+
+                HUD(escolha);
+
+                tecla = readch();
+                printf("Tecla: %d\n", tecla);
+
+                if(tecla == 'w'){
+
+                    if(escolha == 1){
+                        escolha = 3;
+                    }
+                    else if(escolha == 2){
+                        escolha = 1;
+                    }
+                    else{
+                        escolha = 2;
+                    }
+                }
+
+                else if(tecla == 's'){
+
+                    if(escolha == 1){
+                        escolha = 2;
+                    }
+                    else if(escolha == 2){
+                        escolha = 3;
+                    }
+                    else{
+                        escolha = 1;
+                    }
+                }
+
+                if(tecla == 10 || tecla == 13){
+                     return escolha;
+                }
+            }
+        }
     
-        
+    void MostrarRanking(){
 
-    int main(){
+            FILE *arquivo;
+            char nome[30];
+            int pontos;
+            char tecla = ' ';
 
-        
+            while(tecla != 'q' && tecla != 'Q'){
 
+                screenClear();
+
+                printf("\033[33m========================================\033[0m\n");
+                printf("\033[33m              PONTUACAO SALVA                  \033[0m\n");
+                printf("\033[33m========================================\033[0m\n\n");
+
+                arquivo = fopen("score.txt", "r");
+
+                if(arquivo != NULL){
+
+                    while(fscanf(arquivo, "%s %d", nome, &pontos) != EOF){
+
+                        printf("              %s - %d pontos\n\n", nome, pontos);
+                    }
+
+                    fclose(arquivo);
+
+                }else{
+
+                    printf("        Nenhum score salvo ainda.\n\n");
+                }
+
+                printf("\033[34m----------------------------------------\033[0m\n\n");
+                printf("        Aperte \033[32mQ\033[0m para voltar\n");
+
+                tecla = readch();
+            }
+        }
+
+    void Jogar(){
 
         srand(time(NULL));
+
         struct inimigo enemy;
 
         enemy.prox = &enemy2;
@@ -471,29 +587,28 @@
         enemy3.prox = &enemy4;
         enemy4.prox = NULL;
 
+        InicializarInimigo(&enemy, 8, 14, 3, 31);
+        InicializarInimigo(&enemy2, 9, 13, 6, 32);
+        InicializarInimigo(&enemy3, 9, 14, 9, 35);
+        InicializarInimigo(&enemy4, 9, 15, 12, 36);
 
-    InicializarInimigo(&enemy, 8, 14, 3, 31);
-    InicializarInimigo(&enemy2, 9, 13, 6, 32);
-    InicializarInimigo(&enemy3, 9, 14, 9, 35);
-    InicializarInimigo(&enemy4, 9, 15, 12, 36);
-
-        struct inimigo *atual;
-
-        atual = &enemy;
+        struct inimigo *atual = &enemy;
 
         struct jogador player;
 
-        printf("Digite seu nome: ");
-        scanf("%29s", player.nome);
+       keyboardDestroy();
 
+       printf("Digite seu nome: ");
+       scanf("%29s", player.nome);
+
+        keyboardInit();
         player.vida = 3;
         player.pontos = 0;
         player.poder = 0;
 
+        int MapaDoMaroto[LINHAS][COLUNAS];
 
-    int MapaDoMaroto[LINHAS][COLUNAS];    
-
-    int Mapa1[LINHAS][COLUNAS] = {
+        int Mapa1[LINHAS][COLUNAS] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
         {1,2,4,4,4,4,4,4,4,4,4,4,1,4,4,4,4,1,4,4,4,4,4,4,4,4,4,4,5,1},
         {1,4,1,1,1,1,4,1,1,1,1,4,1,4,1,1,4,1,4,1,1,1,1,4,1,1,1,1,4,1},
@@ -515,7 +630,9 @@
         {1,4,4,4,4,4,4,4,4,4,4,4,1,4,4,4,4,1,4,4,4,4,4,4,4,4,4,4,4,1},
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
         };
-    int Mapa2[LINHAS][COLUNAS] = {
+   
+
+        int Mapa2[LINHAS][COLUNAS] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
         {1,2,4,4,4,4,4,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,4,4,4,4,4,5,1},
         {1,4,1,1,1,1,4,1,4,1,1,1,1,4,1,1,4,1,1,1,1,4,1,4,1,1,1,1,4,1},
@@ -531,108 +648,135 @@
         {1,4,1,1,1,4,1,1,1,4,1,1,1,1,4,4,1,1,1,1,4,1,1,1,1,4,1,1,4,1},
         {1,4,4,4,4,4,4,4,1,4,4,4,4,4,5,4,4,4,4,4,4,1,4,4,4,4,4,4,4,1},
         {1,1,1,1,4,1,1,4,1,1,1,1,4,1,1,1,1,4,1,1,1,1,4,1,1,4,1,1,1,1},
-        {1,4,4,4,4,4,1,4,4,4,4,1,4,4,4,4,4,1,4,4,4,4,1,4,4,4,4,4,5,1},
+        {1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,1},
         {1,4,1,1,1,4,1,1,1,1,4,1,1,1,4,4,1,1,1,4,1,1,1,1,4,1,1,1,4,1},
         {1,4,4,4,1,4,4,4,4,1,4,4,4,4,4,4,4,4,4,1,4,4,4,4,1,4,4,4,4,1},
         {1,4,1,4,4,4,1,1,4,4,4,1,4,4,4,4,4,1,4,4,4,1,1,4,4,4,1,4,4,1},
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
         };
 
-    char tecla = ' ';
+        char tecla = ' ';
+        int fase = 1;
 
-        
-    int fase = 1;
-            
-    CopiarMapa(MapaDoMaroto, Mapa1);
-    MapaDoMaroto[enemy.linha][enemy.coluna] = 6;
-    MapaDoMaroto[enemy2.linha][enemy2.coluna] = 6;
-    MapaDoMaroto[enemy3.linha][enemy3.coluna] = 6;
-    MapaDoMaroto[enemy4.linha][enemy4.coluna] = 6;
+        CopiarMapa(MapaDoMaroto, Mapa1);
 
-    keyboardInit();
-    screenInit(1);
-    timerInit(125);
+        MapaDoMaroto[enemy.linha][enemy.coluna] = 6;
+        MapaDoMaroto[enemy2.linha][enemy2.coluna] = 6;
+        MapaDoMaroto[enemy3.linha][enemy3.coluna] = 6;
+        MapaDoMaroto[enemy4.linha][enemy4.coluna] = 6;
 
-    while(tecla != 'q'){
+        while(tecla != 'q'){
 
-        if (keyhit()) {
-        tecla = readch();
-    }
-
-        if (timerTimeOver()) {
-
-            screenClear();
-
-            AcharJogador(&player, MapaDoMaroto);
-
-            MoverJogador(&player, MapaDoMaroto, tecla);
-
-            atual = &enemy;
-
-            while(atual != NULL){
-
-                PoderDaCereja(&player, atual, MapaDoMaroto, fase);
-                PerderVida(&player, atual, MapaDoMaroto, fase);
-
-                AtualizarInimigo(atual, MapaDoMaroto);
-
-                PoderDaCereja(&player, atual, MapaDoMaroto, fase);
-                PerderVida(&player, atual, MapaDoMaroto, fase);
-
-                atual = atual->prox;
+            if(keyhit()){
+                tecla = readch();
             }
 
-            
+            if(timerTimeOver()){
 
-            ImprimirMapa(MapaDoMaroto, &player, &enemy);
-            printf("\nVida: %d | Pontos: %d\n", player.vida, player.pontos);
+                screenClear();
 
-            screenUpdate();
+                AcharJogador(&player, MapaDoMaroto);
+
+                MoverJogador(&player, MapaDoMaroto, tecla);
+
+                atual = &enemy;
+
+                while(atual != NULL){
+
+                    PoderDaCereja(&player, atual, MapaDoMaroto, fase);
+                    PerderVida(&player, atual, MapaDoMaroto, fase);
+
+                    AtualizarInimigo(atual, MapaDoMaroto);
+
+                    PoderDaCereja(&player, atual, MapaDoMaroto, fase);
+                    PerderVida(&player, atual, MapaDoMaroto, fase);
+
+                    atual = atual->prox;
+                }
+
+                ImprimirMapa(MapaDoMaroto, &player, &enemy);
+
+                printf("\nVida: %d | Pontos: %d\n",
+                    player.vida,
+                    player.pontos);
+
+                screenUpdate();
+            }
+
+            if(VerificarGameOver(player) == 1){
+
+                SalvarScore(&player);
+
+                printf("Game Over!\n");
+
+                break;
+            }
+
+            if(VerificarSePassouDeFase(MapaDoMaroto) == 0){
+
+                if(fase == 1){
+
+                    printf("\nVoce passou para a fase 2!\n");
+
+                    CopiarMapa(MapaDoMaroto, Mapa2);
+
+                    fase = 2;
+
+                }else{
+
+                    CopiarMapa(MapaDoMaroto, Mapa1);
+
+                    fase = 1;
+                }
+
+                AcharJogador(&player, MapaDoMaroto);
+
+                atual = &enemy;
+
+                while(atual != NULL){
+
+                    atual->linha = atual->linhaSpawn;
+                    atual->coluna = atual->colunaSpawn;
+                    atual->ParadoOuAndando = ESPERANDO;
+                    atual->inicioEspera = time(NULL);
+                    atual->sobrepor = 0;
+                    atual->direcao = rand() % 4;
+
+                    MapaDoMaroto[atual->linha][atual->coluna] = 6;
+
+                    atual = atual->prox;
+                }
+            }
+        }
     }
-        if(VerificarGameOver(player) == 1){
-            SalvarScore(&player);
-            printf("Game Over!\n");
-            break;
+        
+
+    int main(){
+
+        int opcao;
+
+        keyboardInit();
+        screenInit(1);
+        timerInit(125);
+
+        while(1){
+
+            opcao = MenuInicial();
+
+            if(opcao == 1){
+                Jogar();
+            }
+            else if(opcao == 2){
+                MostrarRanking();
+            }
+            else if(opcao == 3){
+                break;
+            }
         }
 
-        if(VerificarSePassouDeFase(MapaDoMaroto) == 0){
-
-            if(fase == 1){
-
-                printf("\nVoce passou para a fase 2!\n");
-
-                CopiarMapa(MapaDoMaroto, Mapa2);
-
-                fase = 2;
-                
-            }
-            else{
-                CopiarMapa(MapaDoMaroto, Mapa1);
-                fase = 1;
-                
-            }
-             AcharJogador(&player, MapaDoMaroto);
-
-            atual = &enemy;
-
-            while(atual != NULL){
-
-                atual->linha = atual->linhaSpawn;
-                atual->coluna = atual->colunaSpawn;
-                atual->ParadoOuAndando = ESPERANDO;
-                atual->inicioEspera = time(NULL);
-                atual->sobrepor = 0;
-                atual->direcao = rand() % 4;
-
-                MapaDoMaroto[atual->linha][atual->coluna] = 6;
-
-                atual = atual->prox;
-            }
-    }
-        
-    }
         keyboardDestroy();
         screenDestroy();
         timerDestroy();
+
         return 0;
     }
