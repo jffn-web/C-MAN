@@ -24,6 +24,13 @@
 
     };
 
+    struct score{
+
+        char nome[30];
+        int pontos;
+
+    };
+
     struct inimigo{
         
         int linha;
@@ -540,41 +547,60 @@
     
     void MostrarRanking(){
 
-            FILE *arquivo;
-            char nome[30];
-            int pontos;
-            char tecla = ' ';
+        FILE *arquivo;
+        struct score *jogadores;
+        int quantidade = 0;
+        int i;
+        char tecla = ' ';
 
-            while(tecla != 'q' && tecla != 'Q'){
+        jogadores = malloc(100 * sizeof(struct score));
 
-                screenClear();
+        
 
-                printf("\033[33m========================================\033[0m\n");
-                printf("\033[33m              PONTUACAO SALVA                  \033[0m\n");
-                printf("\033[33m========================================\033[0m\n\n");
+        while(tecla != 'q' && tecla != 'Q'){
 
-                arquivo = fopen("score.txt", "r");
+            quantidade = 0;
 
-                if(arquivo != NULL){
+            screenClear();
 
-                    while(fscanf(arquivo, "%s %d", nome, &pontos) != EOF){
+            printf("\033[33m========================================\033[0m\n");
+            printf("\033[33m          PONTUACAO SALVA              \033[0m\n");
+            printf("\033[33m========================================\033[0m\n\n");
 
-                        printf("              %s - %d pontos\n\n", nome, pontos);
-                    }
+            arquivo = fopen("score.txt", "r");
 
-                    fclose(arquivo);
+            if(arquivo != NULL){
 
-                }else{
+                while(fscanf(arquivo, "%s %d",jogadores[quantidade].nome,&jogadores[quantidade].pontos) != EOF){
 
-                    printf("        Nenhum score salvo ainda.\n\n");
+                    quantidade++;
+
                 }
 
-                printf("\033[34m----------------------------------------\033[0m\n\n");
-                printf("        Aperte \033[32mQ\033[0m para voltar\n");
+                fclose(arquivo);
 
-                tecla = readch();
+                for(i = 0; i < quantidade; i++){
+
+                    printf("              %s - %d pontos\n\n",
+                        jogadores[i].nome,
+                        jogadores[i].pontos);
+
+                }
+
+            }else{
+
+                printf("        Nenhum score salvo ainda.\n\n");
+
             }
+
+            printf("\033[34m----------------------------------------\033[0m\n\n");
+            printf("        Aperte \033[32mQ\033[0m para voltar\n");
+
+            tecla = readch();
         }
+
+        free(jogadores);
+    }
 
     void Jogar(){
 
