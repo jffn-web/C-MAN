@@ -494,7 +494,7 @@
             }
             else if(escolha == 3){
                 printf("                JOGAR\n\n");
-                printf("                RANKING\n\n");
+                printf("                PONTUACAO\n\n");
                 printf("              \033[32m> [ SAIR ]\033[0m\n\n");
             }
 
