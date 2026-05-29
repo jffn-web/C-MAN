@@ -35,7 +35,6 @@
         
         int linha;
         int coluna;
-        int vivo;
         int direcao;
         int sobrepor;
         int linhaSpawn;
@@ -208,56 +207,61 @@
         return 0;
 
         }
+    void MoverInimigo(struct inimigo *enemy, int mapa[LINHAS][COLUNAS], struct jogador *player){
 
-    void MoverInimigo(struct inimigo *enemy, int mapa[LINHAS][COLUNAS]){
+            int novaLinha = enemy->linha;
+            int novaColuna = enemy->coluna;
 
-        int novaLinha = enemy->linha;
-        int novaColuna = enemy->coluna;
-
-
-        if(enemy->direcao == 0){
-            novaLinha--;
-        }else if(enemy->direcao == 1){
-            novaColuna++;
-        }else if(enemy->direcao == 2){
-            novaLinha++;
-        }else if(enemy->direcao == 3){
-            novaColuna--;
-        }
-
-      if(novaLinha == 7 && novaColuna < 0){
-            
-            novaColuna = 28;
-            
-        }
-
-    if(novaLinha == 7 && novaColuna > 29){
-            
-            novaColuna = 1;
-
-        }
-
-
-        if(mapa[novaLinha][novaColuna] == 1 || mapa[novaLinha][novaColuna] == 2 || mapa[novaLinha][novaColuna] == 6){
-
-            enemy->direcao = rand() % 4;
-        
-        }else{
-
-
-            mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
-
-            enemy->sobrepor = mapa[novaLinha][novaColuna];
-
-            enemy->linha = novaLinha;
-            enemy->coluna = novaColuna;
-
-            mapa[enemy->linha][enemy->coluna] = 6;
-
+            if(enemy->direcao == 0){
+                novaLinha--;
+            }else if(enemy->direcao == 1){
+                novaColuna++;
+            }else if(enemy->direcao == 2){
+                novaLinha++;
+            }else if(enemy->direcao == 3){
+                novaColuna--;
             }
-    }   
 
-    void AtualizarInimigo(struct inimigo *enemy, int mapa[LINHAS][COLUNAS]){
+            if(novaLinha == 7 && novaColuna < 0){
+                novaColuna = 28;
+            }
+
+            if(novaLinha == 7 && novaColuna > 29){
+                novaColuna = 1;
+            }
+
+            if(novaLinha == player->linha && novaColuna == player->coluna){
+
+                printf("COLIDIU\n");
+                mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
+
+                enemy->linha = novaLinha;
+                enemy->coluna = novaColuna;
+                enemy->sobrepor = 0;
+
+                mapa[enemy->linha][enemy->coluna] = 6;
+
+                return;
+            }
+
+            if(mapa[novaLinha][novaColuna] == 1 || mapa[novaLinha][novaColuna] == 6){
+
+                enemy->direcao = rand() % 4;
+
+            }else{
+
+                mapa[enemy->linha][enemy->coluna] = enemy->sobrepor;
+
+                enemy->sobrepor = mapa[novaLinha][novaColuna];
+
+                enemy->linha = novaLinha;
+                enemy->coluna = novaColuna;
+
+                mapa[enemy->linha][enemy->coluna] = 6;
+            }
+        } 
+
+    void AtualizarInimigo(struct inimigo *enemy, int mapa[LINHAS][COLUNAS], struct jogador *player){
 
             if(enemy->ParadoOuAndando == ESPERANDO){
 
@@ -270,7 +274,7 @@
 
             }else if(enemy->ParadoOuAndando == ANDANDO){
 
-            MoverInimigo(enemy, mapa);
+            MoverInimigo(enemy, mapa, player);
 
             }
     }
@@ -312,6 +316,7 @@
                     enemy->inicioEspera = time(NULL);
                     enemy->direcao = rand() % 4;
 
+                    mapa[player->linha][player->coluna] = 2;
                     mapa[enemy->linha][enemy->coluna] = 6;
             }
         }else if(fase == 2){
@@ -339,7 +344,7 @@
         int InicioPC = 1;
         
 
-        int InicioMapa2PL = 18;
+        int InicioMapa2PL = 1;
         int InicioMapa2PC = 1;
         
 
@@ -446,7 +451,6 @@
         enemy->inicioEspera = time(NULL);
 
         enemy->direcao = 0;
-        enemy->vivo = 1;
         enemy->sobrepor = 0;
 
    }
@@ -511,7 +515,7 @@
                 HUD(escolha);
 
                 tecla = readch();
-                printf("Tecla: %d\n", tecla);
+                
 
                 if(tecla == 'w'){
 
@@ -555,7 +559,12 @@
 
         jogadores = malloc(100 * sizeof(struct score));
 
-        
+        if(jogadores == NULL){
+
+            printf("Erro ao alocar memoria.\n");
+            return;
+
+        }
 
         while(tecla != 'q' && tecla != 'Q'){
 
@@ -571,8 +580,8 @@
 
             if(arquivo != NULL){
 
-                while(fscanf(arquivo, "%s %d",jogadores[quantidade].nome,&jogadores[quantidade].pontos) != EOF){
-
+                while(quantidade < 100 && fscanf(arquivo, "%29s %d", jogadores[quantidade].nome, &jogadores[quantidade].pontos) == 2){
+                
                     quantidade++;
 
                 }
@@ -712,7 +721,7 @@
                     PoderDaCereja(&player, atual, MapaDoMaroto, fase);
                     PerderVida(&player, atual, MapaDoMaroto, fase);
 
-                    AtualizarInimigo(atual, MapaDoMaroto);
+                    AtualizarInimigo(atual, MapaDoMaroto, &player);
 
                     PoderDaCereja(&player, atual, MapaDoMaroto, fase);
                     PerderVida(&player, atual, MapaDoMaroto, fase);
